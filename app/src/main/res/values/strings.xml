@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RepEat</string>
+    <string name="greet">Answer the question</string>
+    <string name="field">Həll və ya cavab</string>
+    <string name="newS">Yenisi</string>
+    <string name="sual1">(2πR)/(T)=?</string>
+</resources>
