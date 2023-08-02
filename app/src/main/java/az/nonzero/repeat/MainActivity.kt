@@ -1,9 +1,16 @@
+@file:OptIn(ExperimentalAnimationApi::class)
+
 package az.nonzero.repeat
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,6 +50,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,9 +66,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import az.nonzero.repeat.datastore.StoredData
@@ -130,15 +140,32 @@ fun Program() {
                 )
             }
         }
-        Text(
-            text = "Ən yüksək: ${high_score.value}"+"          "+"Hazırki: $points",
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentSize(Alignment.Center),
-            color = Color.Green
+                .wrapContentSize(Alignment.Center)
         )
+        {
+            Text(
+                text = "Ən yüksək: ${high_score.value}",
+                color = Color.Magenta
+            )
+            Spacer(modifier = Modifier.size(4.dp))
+            Row {
+                Text(
+                    text = "Hazırki: ", //$points
+                    color = Color.Green
+                )
+                AnimatedCounter(
+                    count = points,
+                    fontSize = 25.dp,
+                    color = Color.Green
+                    //style = MaterialTheme.typography.headlineSmall
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(5.dp))
-        Question_maker(last_question.value, modifier = Modifier.wrapContentSize(Alignment.Center))
+        Question_maker(last_question.value, modifier = Modifier)
         if(correction) {
             Text(
                 text = "Cavab düzgündür!",
@@ -167,8 +194,8 @@ fun Program() {
         Row {
             TextButton(
                 onClick = {
-                          if(permit_win) {permit_win=false}
-                          else if(!permit_win) {permit_win=true}
+                    if(permit_win) {permit_win=false}
+                    else if(!permit_win) {permit_win=true}
                 },
                 modifier = Modifier
                     .wrapContentSize(Alignment.Center)
@@ -219,9 +246,9 @@ fun Program() {
                     }
 
                 },
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.End)) {
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(Alignment.End)) {
                 Icon(
                     Icons.Filled.KeyboardArrowRight,
                     contentDescription = "Localized description",
@@ -307,6 +334,47 @@ fun Question_maker(number: Any,modifier: Modifier) {
         color = Color.DarkGray
     )
     Spacer(modifier = modifier.size(10.dp))
+}
+
+@Composable
+fun AnimatedCounter(
+    count: Int,
+    modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    fontSize: Dp,
+    color: Color
+) {
+    var oldCount by remember {
+        mutableStateOf(count)
+    }
+    SideEffect {
+        oldCount = count
+    }
+    Row(modifier = modifier) {
+        val countString = count.toString()
+        val oldCountString = oldCount.toString()
+        for(i in countString.indices) {
+            val oldChar = oldCountString.getOrNull(i)
+            val newChar = countString[i]
+            val char = if(oldChar == newChar) {
+                oldCountString[i]
+            } else {
+                countString[i]
+            }
+            AnimatedContent(
+                targetState = char,
+                transitionSpec = {
+                    slideInVertically { it } with slideOutVertically { -it }
+                }
+            ) { char ->
+                Text(
+                    text = char.toString(),
+                    style = style,
+                    softWrap = false
+                )
+            }
+        }
+    }
 }
 
 fun physics_question(num: Any): String{
