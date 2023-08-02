@@ -3,6 +3,7 @@
 package az.nonzero.repeat
 
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
@@ -70,13 +71,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import az.nonzero.repeat.datastore.StoredData
 import az.nonzero.repeat.ui.theme.RepEatTheme
 import kotlinx.coroutines.launch
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +91,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            currentFocus?.clearFocus()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
     }
 }
 
@@ -126,7 +133,6 @@ fun Program() {
             .padding(22.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-
         if(false) {
             FilledTonalButton(onClick = {
                 null
@@ -158,7 +164,6 @@ fun Program() {
                 )
                 AnimatedCounter(
                     count = points,
-                    fontSize = 25.dp,
                     color = Color.Green
                     //style = MaterialTheme.typography.headlineSmall
                 )
@@ -181,11 +186,32 @@ fun Program() {
             ValueChange = { cavab = it },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Ascii,
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Next
             ),
-            keyboardActions = KeyboardActions(onDone = {
-                keyboardController?.hide()
-                focusManager.clearFocus()
+            keyboardActions = KeyboardActions(onNext = {
+                //keyboardController?.hide()
+                //focusManager.clearFocus()
+                if (correction) {
+                    if (cavab != "") {
+                        points += 1
+                    }
+                    correction = false
+                    snackbar_mes = ""
+                    cavab = ""
+                    numBer = (1..50).random()
+                    if (points > (high_score.value.toString()).toInt()) {
+                        scope.launch {
+                            dataStore.editScore(points)
+                        }
+                    }
+                    scope.launch {
+                        dataStore.editQues(numBer)
+                    }
+                } else if(cavab=="31") {
+                    if((high_score.value.toString()).toInt()<31) {
+                        scope.launch { dataStore.editScore(31) }
+                    }
+                }
             }),
             modifier = Modifier
                 .fillMaxWidth()
@@ -341,7 +367,6 @@ fun AnimatedCounter(
     count: Int,
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
-    fontSize: Dp,
     color: Color
 ) {
     var oldCount by remember {
@@ -370,7 +395,9 @@ fun AnimatedCounter(
                 Text(
                     text = char.toString(),
                     style = style,
-                    softWrap = false
+                    softWrap = false,
+                    fontSize = 15.sp,
+                    color = color
                 )
             }
         }
