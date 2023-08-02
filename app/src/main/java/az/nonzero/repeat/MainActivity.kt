@@ -138,7 +138,7 @@ fun Program() {
             color = Color.Green
         )
         Spacer(modifier = Modifier.height(5.dp))
-        Question_maker(last_question.value, modifier = Modifier)
+        Question_maker(last_question.value, modifier = Modifier.wrapContentSize(Alignment.Center))
         if(correction) {
             Text(
                 text = "Cavab düzgündür!",
