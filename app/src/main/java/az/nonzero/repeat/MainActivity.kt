@@ -9,11 +9,18 @@ import androidx.activity.compose.setContent
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -28,21 +35,28 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
@@ -51,6 +65,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,20 +76,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import az.nonzero.repeat.datastore.StoredData
 import az.nonzero.repeat.ui.theme.RepEatTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -82,12 +103,38 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             RepEatTheme {
+                var isLoading by remember {
+                    mutableStateOf(true)
+                }
+                LaunchedEffect(key1 = true) {
+                    delay(3000)
+                    isLoading = false
+                }
                 // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Program()
+                if(isLoading) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        items(1) {
+                            ShimmerListItem(
+                                isLoading = isLoading,
+                                contentAfterLoading = {
+                                    //Program()
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+                    }
+                }
+                if(!isLoading){
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        Program()
+                    }
                 }
             }
         }
@@ -116,8 +163,6 @@ fun Program() {
     //Last question
     val last_question = dataStore.loadQues.collectAsState(initial = "")
     //
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
     var cavab by remember { mutableStateOf("") }
     var points by remember { mutableStateOf(0) }
     var numBer by remember { mutableStateOf(1) }
@@ -133,34 +178,23 @@ fun Program() {
             .padding(22.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        if(false) {
-            FilledTonalButton(onClick = {
-                null
-            }
-            ) {
-                Icon(
-                    Icons.Filled.List,
-                    contentDescription = "List",
-                    modifier = Modifier
-                        .size(ButtonDefaults.IconSize)
-                )
-            }
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
-        {
+        MenuSample()
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Ən yüksək: ${high_score.value}",
-                color = Color.Magenta
+                color = Color.Magenta,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.Center)
             )
-            Spacer(modifier = Modifier.size(4.dp))
-            Row {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.Center)
+            ) {
                 Text(
                     text = "Hazırki: ", //$points
-                    color = Color.Green
+                    color = Color.Green,
                 )
                 AnimatedCounter(
                     count = points,
@@ -323,6 +357,7 @@ fun Program() {
                 }
             }
         }
+
         //Bottom
         Row(modifier = Modifier
             .fillMaxHeight()
@@ -339,7 +374,7 @@ fun Program() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentSize(Alignment.Center),
-                        color = Color.Gray
+                        color = Color(0xFFFADD4F)
                     )
                 }
             }
@@ -357,11 +392,12 @@ fun Question_maker(number: Any,modifier: Modifier) {
             .fillMaxWidth()
             .wrapContentSize(Alignment.Center),
         fontSize = 24.sp,
-        color = Color.DarkGray
+        color = Color(0xFF7C4EFC)
     )
     Spacer(modifier = modifier.size(10.dp))
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AnimatedCounter(
     count: Int,
@@ -402,6 +438,166 @@ fun AnimatedCounter(
             }
         }
     }
+}
+
+@Composable
+fun ShimmerListItem(
+    isLoading: Boolean,
+    contentAfterLoading: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if(isLoading) {
+        Column(modifier = modifier.fillMaxSize()) {
+            Spacer(modifier = modifier.height(10.dp))
+            Box(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.Center)
+                    .width(100.dp)
+                    .height(10.dp)
+                    .shimmerEffect()
+            )
+            Spacer(modifier = modifier.height(10.dp))
+            Box(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .wrapContentSize(Alignment.Center)
+                    .width(100.dp)
+                    .height(10.dp)
+                    .shimmerEffect()
+            )
+            Spacer(modifier = Modifier.height(200.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(35.dp)
+                    .padding(start = 10.dp, end = 10.dp)
+                    .shimmerEffect()
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(80.dp)
+                        .shimmerEffect()
+                )
+                Spacer(modifier = Modifier.width(20.dp))
+                Box(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(80.dp)
+                        .shimmerEffect()
+                )
+                Spacer(modifier = Modifier.width(100.dp))
+                Box(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(80.dp)
+                        .shimmerEffect()
+                )
+            }
+        }
+    } else {
+        contentAfterLoading()
+    }
+}
+
+fun Modifier.shimmerEffect(): Modifier = composed {
+    var size by remember {
+        mutableStateOf(IntSize.Zero)
+    }
+    val transition = rememberInfiniteTransition()
+    val startOffsetX by transition.animateFloat(
+        initialValue = -2 * size.width.toFloat(),
+        targetValue = 2 * size.width.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000)
+        )
+    )
+
+    background(
+        brush = Brush.linearGradient(
+            colors = listOf(
+                Color(0xFFEBD4A8),
+                Color(0xFF5FB6A0),
+                Color(0xFFFFFFFF),
+            ),
+            start = Offset(startOffsetX, 0f),
+            end = Offset(startOffsetX + size.width.toFloat(), size.height.toFloat())
+        )
+    )
+        .onGloballyPositioned {
+            size = it.size
+        }
+}
+
+@Composable
+fun MenuSample() {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .wrapContentSize(Alignment.TopStart)
+    ) {
+        IconButton(onClick = { expanded = true }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Edit") },
+                onClick = { /* Handle edit! */ },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = null
+                    )
+                })
+            DropdownMenuItem(
+                text = { Text("Settings") },
+                onClick = { /* Handle settings! */ },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = null
+                    )
+                })
+            HorizontalDivider()
+            DropdownMenuItem(
+                text = { Text("Send Feedback") },
+                onClick = { /* Handle send feedback! */ },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Email,
+                        contentDescription = null
+                    )
+                },
+                trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+        }
+    }
+}
+
+@Composable
+fun HorizontalDivider(
+    modifier: Modifier = Modifier,
+    thickness: Dp = DividerDefaults.Thickness,
+    color: Color = DividerDefaults.color,
+) = Canvas(
+    modifier
+        .fillMaxWidth()
+        .height(thickness)) {
+    drawLine(
+        color = color,
+        strokeWidth = thickness.toPx(),
+        start = Offset(0f, thickness.toPx() / 2),
+        end = Offset(size.width, thickness.toPx() / 2),
+    )
 }
 
 fun physics_question(num: Any): String{
