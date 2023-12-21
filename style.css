@@ -1,0 +1,68 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Madehand', sans-serif;
+}
+@font-face{
+    font-family: Madehand;
+    src: url(Madehand-Regular.ttf);
+}
+.part1{
+    min-height: 100vh;
+    width: 100%;
+    background-image: linear-gradient(rgba(4,9,30,0.7),rgba(4,9,30,0.7)),url(1.png);
+    background-position: center;
+    background-size: cover;
+    position: relative;
+}
+.part2{
+    min-height: 100vh;
+    width: 100%;
+    background-image: linear-gradient(rgba(4,9,30,0.7),rgba(4,9,30,0.7)),url(2.png);
+    background-position: center;
+    background-size: cover;
+    position: relative;
+}
+.enterance{
+    font-size: 100px;
+    color: aqua;
+    padding: 1%;
+    text-align: right;
+}
+.license{
+    font-size: 25px;
+    color: crimson;
+    text-decoration: none;
+    position: absolute;
+    top: 90%;
+    left: 90%;
+}
+.contact a{
+    padding: 5px;
+}
+.contact{
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    color: aquamarine;
+    transform: translate(-50%,-40%);
+    text-align: center;
+    padding: 10%;
+    font-size: 40px;
+    text-decoration: none;
+}
+.button{
+    display: inline-block;
+    color: antiquewhite;
+    border: 1px solid #91e8ee;
+    text-decoration: none;
+    margin: 15px;
+    background: #20ebda50;
+    position: relative;
+    cursor: pointer;
+    color: aquamarine;
+}
+.button:hover{
+    background: #145af1;
+    transition: 2s;
+}
