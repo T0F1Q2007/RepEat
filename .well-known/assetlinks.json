@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "az.nonzero.repeat",
+    "sha256_cert_fingerprints":
+    ["12:50:45:5E:68:16:65:2C:09:1C:46:BF:64:E1:7D:DB:21:87:F1:A4:FB:F1:B6:25:FD:22:A9:A1:50:FC:6A:64"]
+  }
+}]
