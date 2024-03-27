@@ -33,3 +33,23 @@ self.addEventListener('push', function(event) {
     };
   event.waitUntil(self.registration.showNotification(title, options));
 });
+var piling = new Piling("#piling", {
+  direction: 'vertical',
+  animation: 'fade',
+  speed: 800,
+  spacing: "10%",
+  navigation: {
+    dots: true,
+    arrows: true
+  }
+});
+piling.on("enter", function(index) {
+  console.log("Entered section" + index)
+});
+let decTitle = document.title;
+window.addEventListener('blur', () =>{
+  document.title = "Come Here!";
+})
+window.addEventListener('focus', () =>{
+  document.title = docTitle;
+})
